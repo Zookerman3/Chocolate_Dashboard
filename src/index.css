@@ -1,0 +1,204 @@
+/* Case Notes — token sheet and base layer.
+ *
+ * Every value here is named in the design handoff's Tokens screen. Roles resolve
+ * against the Organic system's tonal ramps; the dark theme is SELECTED from the
+ * same ramps, never an automatic inversion of the light one.
+ *
+ * Screens consume roles (var(--cn-ink-2)), never raw hex. */
+
+:root {
+  --cn-bg: #f5ead8;
+  --cn-surface: #f9f4ed;
+  --cn-surface-2: #eee7db;
+  --cn-ink: #2e2b25;
+  --cn-ink-2: #645c50;
+  --cn-ink-3: #82796a;
+  --cn-line: #dcd3c4;
+  --cn-line-soft: #e7dfd1;
+
+  --cn-accent: #b2622d;        /* accent as TEXT — the paragraph-safe deep step */
+  --cn-accent-fill: #c67139;   /* accent as a FILL — primary button, brand mark */
+  --cn-accent-soft: #fff2eb;
+  --cn-sage: #56633f;
+  --cn-sage-fill: #728157;
+  --cn-sage-soft: #f0fae1;
+  --cn-status-stale: #82796a;
+  --cn-status-caution: #b2622d;
+
+  /* Sequential ramp: one hue, light to dark. Bound to a flavor's standing, so a
+   * date-range change never repaints the bars. */
+  --cn-seq-1: #ffd9c2;
+  --cn-seq-2: #ffc6a5;
+  --cn-seq-3: #f6a06b;
+  --cn-seq-4: #e08a52;
+  --cn-seq-5: #d67f48;
+  --cn-seq-6: #b2622d;
+  --cn-seq-7: #8c491a;
+
+  /* Categorical: exactly two slots, fixed order, never cycled. */
+  --cn-cat-1: #c67139;         /* camera-assisted */
+  --cn-cat-2: #728157;         /* tap */
+  --cn-heat-0: #eee7db;
+
+  --cn-shadow: 0 1px 2px rgba(46, 43, 37, 0.09);
+  --cn-shadow-md: 0 3px 10px rgba(46, 43, 37, 0.12);
+
+  --cn-font-display: 'Caprasimo', Georgia, serif;
+  --cn-font-body: 'Figtree', system-ui, -apple-system, sans-serif;
+
+  --cn-radius-sm: 10px;
+  --cn-radius: 20px;
+  --cn-radius-lg: 28px;
+  --cn-radius-pill: 999px;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --cn-bg: #1f1c17;
+  --cn-surface: #2a251f;
+  --cn-surface-2: #332d25;
+  --cn-ink: #f5ead8;
+  --cn-ink-2: #c0b6a5;
+  --cn-ink-3: #a19786;
+  --cn-line: #463e33;
+  --cn-line-soft: #3a3229;
+
+  --cn-accent: #f6a06b;
+  --cn-accent-fill: #d67f48;
+  --cn-accent-soft: #3a2617;
+  --cn-sage: #aebf92;
+  --cn-sage-fill: #8fa073;
+  --cn-sage-soft: #2b3320;
+  --cn-status-stale: #a19786;
+  --cn-status-caution: #f6a06b;
+
+  --cn-seq-1: #5a2f16;
+  --cn-seq-2: #75401f;
+  --cn-seq-3: #8c491a;
+  --cn-seq-4: #b2622d;
+  --cn-seq-5: #d67f48;
+  --cn-seq-6: #f6a06b;
+  --cn-seq-7: #ffc6a5;
+
+  --cn-cat-1: #d67f48;
+  --cn-cat-2: #8fa073;
+  --cn-heat-0: #332d25;
+
+  --cn-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --cn-shadow-md: 0 3px 12px rgba(0, 0, 0, 0.45);
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--cn-bg);
+  color: var(--cn-ink);
+  font-family: var(--cn-font-body);
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: #ffc6a5; color: #402310; }
+
+a { color: var(--cn-accent); text-decoration: none; border-bottom: 1px solid currentColor; }
+a:hover { color: var(--cn-ink); }
+
+button, select, input { font: inherit; color: inherit; }
+
+/* Themed focus, never the default blue ring. */
+:focus-visible { outline: 2px solid var(--cn-accent-fill); outline-offset: 2px; }
+
+h1, h2, h3 { font-family: var(--cn-font-display); font-weight: 400; letter-spacing: -0.015em; margin: 0; }
+
+.cn-num { font-variant-numeric: tabular-nums; }
+
+.cn-eyebrow {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--cn-ink-3);
+}
+
+.cn-panel {
+  border: 1px solid var(--cn-line-soft);
+  border-radius: var(--cn-radius-lg);
+  background: var(--cn-surface);
+  box-shadow: var(--cn-shadow);
+}
+
+.cn-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--cn-radius-pill);
+  border: 1px solid var(--cn-line);
+  background: var(--cn-surface);
+  color: var(--cn-ink);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.cn-btn:hover { background: var(--cn-surface-2); }
+.cn-btn:active { transform: translateY(0.5px); }
+.cn-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+.cn-btn-primary {
+  background: var(--cn-accent-fill);
+  border-color: var(--cn-accent-fill);
+  color: #fff8f0;
+}
+.cn-btn-primary:hover { background: var(--cn-accent); border-color: var(--cn-accent); }
+
+.cn-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.cn-table th {
+  padding: 9px 10px;
+  text-align: left;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--cn-ink-3);
+  background: var(--cn-surface-2);
+  border-bottom: 1px solid var(--cn-line);
+  white-space: nowrap;
+}
+.cn-table td { padding: 8px 10px; border-bottom: 1px solid var(--cn-line-soft); }
+.cn-table tbody tr:last-child td { border-bottom: 0; }
+.cn-table tbody tr:hover { background: var(--cn-accent-soft); }
+
+.cn-fade { animation: cn-fade 0.18s ease-out; }
+@keyframes cn-fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@keyframes cn-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.9; } }
+
+.cn-skeleton {
+  background: var(--cn-surface-2);
+  border-radius: var(--cn-radius-sm);
+  animation: cn-pulse 1.2s ease-in-out infinite;
+}
+
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-thumb {
+  background: var(--cn-line);
+  border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.cn-visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
