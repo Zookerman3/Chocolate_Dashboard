@@ -170,7 +170,7 @@ function relative(from: Date | null): string {
 }
 
 export function StateChip({ source }: { source: DataSource }) {
-  const { kind, stale, filename, syncedAt, durable, storeNote } = source
+  const { kind, stale, filename, syncedAt, durable, store, storeNote } = source
   // The server saying "durable: false" means it is holding these records in
   // memory and will lose them. That must show on the chip itself, in words —
   // never as a colour alone, and never hidden behind a tooltip.
@@ -191,7 +191,7 @@ export function StateChip({ source }: { source: DataSource }) {
   const sub = stale ? `last data ${relative(syncedAt)}`
     : kind === 'file' ? (filename ?? 'from disk')
     : notDurable ? 'not being kept — lost on restart'
-    : kind === 'live' ? `synced ${relative(syncedAt)}`
+    : kind === 'live' ? `${store ? `${store} · ` : ''}synced ${relative(syncedAt)}`
     : kind === 'sample' ? 'generated, not a real shop'
     : 'load something to begin'
 
@@ -262,9 +262,19 @@ export function ThinDataBanner({ boxes }: { boxes: number }) {
         <path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
       </svg>
       <div style={{ fontSize: 12 }}>
-        <strong>{boxes} box{boxes === 1 ? '' : 'es'} is a thin sample.</strong> Every number below is
-        still computed and still shown — but a single unusual box moves a share figure by whole
-        points. Treat the ranking as a hint and the magnitudes as unreliable until there is more.
+        {boxes === 0 ? (
+          <>
+            <strong>No boxes in this window.</strong> If you just connected to the live API, no
+            tablet has synced a box yet — save one with demo mode off and press Refresh. Otherwise
+            widen the date range or set location to all.
+          </>
+        ) : (
+          <>
+            <strong>{boxes} box{boxes === 1 ? '' : 'es'} is a thin sample.</strong> Every number below is
+            still computed and still shown — but a single unusual box moves a share figure by whole
+            points. Treat the ranking as a hint and the magnitudes as unreliable until there is more.
+          </>
+        )}
       </div>
     </div>
   )

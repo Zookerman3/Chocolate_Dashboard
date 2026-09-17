@@ -1,5 +1,7 @@
 // The contract shared with the tablet app (AI_Chocolation, src/domain/types.ts).
-// Keep these two files identical: this dashboard reads what that app writes.
+// Keep the Flavor / BOX_SIZES / BoxRecord half identical to that file: this
+// dashboard reads what that app writes. The tablet's file also holds its
+// live-session types (Piece, BoxSession, CaseLayout), which never reach here.
 
 export type FlavorId = string
 
@@ -38,4 +40,8 @@ export interface BoxRecord {
   /** Additive, optional: set per tablet. Absent on records from older builds,
    * in which case the location filter hides itself entirely. */
   locationId?: string
+  /** Stamped by the tablet's API when it first accepted the record. Never on a
+   * device export; present on everything read from /api/boxes, and kept so the
+   * JSON export from here can tell "new to the server" from "old box synced late". */
+  receivedAt?: string
 }

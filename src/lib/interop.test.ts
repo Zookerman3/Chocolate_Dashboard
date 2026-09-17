@@ -5,7 +5,8 @@
 // `toJSON`, then feeds the output through this dashboard's importer. If someone
 // changes either side's format, this fails.
 //
-// Transcribed from AI_Chocolation @ main, src/features/records/csv.ts.
+// Transcribed from AI_Chocolation @ main, src/features/records/csv.ts, as of
+// 2026-09-17 (the day `location_id` was added to the header).
 
 import { describe, expect, it } from 'vitest'
 import type { BoxRecord } from '../domain/types.ts'
@@ -16,7 +17,7 @@ import { parseCSV, parseJSON } from './ingest.ts'
 // ---- the tablet's exporter, copied verbatim -------------------------------
 
 const TABLET_HEADERS = [
-  'box_id', 'box_size', 'method', 'demo', 'started_at', 'completed_at',
+  'box_id', 'box_size', 'method', 'demo', 'location_id', 'started_at', 'completed_at',
   'duration_ms', 'undo_count', 'flavor_id', 'flavor_name', 'piece_count',
 ] as const
 
@@ -29,13 +30,30 @@ function tabletToCSV(records: readonly BoxRecord[]): string {
   const rows = records.flatMap((record) =>
     record.pieces.map((piece) =>
       [
-        record.id, record.size, record.method, record.demo,
+        record.id, record.size, record.method, record.demo, record.locationId ?? '',
         record.startedAt, record.completedAt, record.durationMs, record.undoCount,
         piece.flavorId, flavorName(piece.flavorId), piece.count,
       ].map(csvField),
     ),
   )
   return [TABLET_HEADERS.join(','), ...rows.map((r) => r.join(','))].join('\n') + '\n'
+}
+
+// The exporter before 2026-09-17: same columns minus location_id. Tablets that
+// exported before then, and spreadsheets saved from those files, still exist.
+const LEGACY_HEADERS = TABLET_HEADERS.filter((h) => h !== 'location_id')
+
+function legacyTabletToCSV(records: readonly BoxRecord[]): string {
+  const rows = records.flatMap((record) =>
+    record.pieces.map((piece) =>
+      [
+        record.id, record.size, record.method, record.demo,
+        record.startedAt, record.completedAt, record.durationMs, record.undoCount,
+        piece.flavorId, flavorName(piece.flavorId), piece.count,
+      ].map(csvField),
+    ),
+  )
+  return [LEGACY_HEADERS.join(','), ...rows.map((r) => r.join(','))].join('\n') + '\n'
 }
 
 function tabletToJSON(records: readonly BoxRecord[]): string {
@@ -75,14 +93,23 @@ describe('tablet CSV export -> dashboard import', () => {
     }
   })
 
-  it('DOCUMENTS A REAL GAP: the tablet CSV has no location column, so locationId is lost', () => {
+  it('carries locationId through the CSV (column added 2026-09-17)', () => {
     // Every sample record carries a locationId...
     expect(RECORDS.every((r) => Boolean(r.locationId))).toBe(true)
-    // ...and none survives the tablet's CSV, because it writes no such column.
-    expect(parsed.every((r) => r.locationId === undefined)).toBe(true)
-    expect(TABLET_HEADERS).not.toContain('location_id')
-    // Consequence: importing a CSV hides the location filter. Import the JSON
-    // export instead when per-store numbers matter.
+    // ...and every one survives the tablet's CSV now that it writes the column.
+    expect(TABLET_HEADERS).toContain('location_id')
+    const byId = new Map(parsed.map((r) => [r.id, r]))
+    for (const original of RECORDS) {
+      expect(byId.get(original.id)?.locationId).toBe(original.locationId)
+    }
+  })
+
+  it('still imports a CSV from before the column existed, with locationId simply absent', () => {
+    // The remaining gap, stated: an older export hides the location filter.
+    const out = parseCSV(legacyTabletToCSV(RECORDS))
+    expect(out.skipped).toEqual([])
+    expect(out.records).toHaveLength(RECORDS.length)
+    expect(out.records.every((r) => r.locationId === undefined)).toBe(true)
   })
 
   it('preserves a flavor name containing a comma through quoting', () => {
