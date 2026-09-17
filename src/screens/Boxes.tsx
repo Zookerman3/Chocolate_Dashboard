@@ -8,7 +8,7 @@ import { EmptyNote, Eyebrow, Footnote, Panel, PanelHeader, Tag } from '../compon
 import { FLAVORS, flavorName } from '../data/flavors.ts'
 import { BOX_SIZES } from '../domain/types.ts'
 import type { BoxRecord, BoxSize, CaptureMethod, FlavorId } from '../domain/types.ts'
-import { download, toCSV } from '../lib/download.ts'
+import { download, recordsToCSV } from '../lib/download.ts'
 import { duration, integer } from '../lib/format.ts'
 import type { ScreenProps } from './contract.ts'
 
@@ -67,19 +67,7 @@ export function Boxes({ records, rangeWord }: ScreenProps) {
   // Long format, one row per flavor per box — the tablet app's own export shape,
   // so a trip out through a spreadsheet still reads back in.
   const exportCSV = () => {
-    download(
-      `case-notes-boxes-${stamp}.csv`,
-      toCSV(
-        [
-          'box_id', 'box_size', 'method', 'demo', 'started_at', 'completed_at',
-          'duration_ms', 'undo_count', 'flavor_id', 'flavor_name', 'piece_count',
-        ],
-        rows.flatMap((r) => r.pieces.map((p) => [
-          r.id, r.size, r.method, r.demo, r.startedAt, r.completedAt,
-          r.durationMs, r.undoCount, p.flavorId, flavorName(p.flavorId), p.count,
-        ])),
-      ),
-    )
+    download(`case-notes-boxes-${stamp}.csv`, recordsToCSV(rows))
   }
 
   const exportJSON = () => {

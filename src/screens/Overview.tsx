@@ -115,7 +115,7 @@ export function Overview({ agg, seqStep, rangeWord, openFlavor }: ScreenProps) {
           label="Boxes captured"
           value={integer(agg.totalBoxes)}
           unit={`${percent(camera * agg.totalBoxes, agg.totalBoxes, 0)} camera`}
-          note="Camera assist is only offered on the 16 and 30 inserts we have measured."
+          note="Camera assist is offered on the 6, 10, 16 and 30 inserts; 50 is tap-only."
         />
         <StatTile
           label="Busiest"

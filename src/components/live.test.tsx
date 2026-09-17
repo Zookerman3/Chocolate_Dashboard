@@ -57,6 +57,24 @@ describe('connecting to the live API', () => {
 
     await waitFor(() => expect(screen.getByText(/^Live$/)).toBeInTheDocument())
     expect(screen.queryByText(/not durable/i)).not.toBeInTheDocument()
+    // The chip names the store it is reading, so "durable" is not just a colour.
+    expect(screen.getByText(/redis · synced/i)).toBeInTheDocument()
+  })
+
+  it('says the server has no boxes yet when the live API answers with an empty list', async () => {
+    serveLive(
+      { ok: true, store: 'redis', durable: true, count: 0 },
+      { records: [], count: 0, store: 'redis', durable: true },
+    )
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: /connect to the live api/i }))
+
+    await waitFor(() => expect(screen.getByText(/^Live$/)).toBeInTheDocument())
+    expect(screen.getByText(/no boxes in this window/i)).toBeInTheDocument()
+    // Not "0 boxes is a thin sample" — zero is not a sample. (The Overview
+    // footnote's own "That is a thin sample" wording is a different sentence.)
+    expect(screen.queryByText(/0 boxes is a thin sample/i)).not.toBeInTheDocument()
   })
 
   it('re-reads the API on Refresh, and keeps the data when that re-read fails', async () => {

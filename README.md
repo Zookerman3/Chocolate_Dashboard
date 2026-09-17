@@ -69,17 +69,23 @@ Keep this honest and current. The judges score it.
   `method`; `pieces[]` collapses to `{flavorId, count}` with no per-piece `source` or `confidence`.
   So we can show camera-vs-tap per box and nothing finer. Keeping `source`/`confidence` on the saved
   record would turn that panel into auto-filled / confirmed / corrected.
-- **Location needs an additive field.** The filter appears only when records carry `locationId`,
-  which the tablet sets per device. Without it the filter hides itself rather than offering a single
-  useless option.
-- **Camera accuracy figures are measured, not live.** 92% top-1 / 97% top-3 come from the tablet
-  app's cross-session holdout on a fixed gallery. They are transcribed here, not recomputed from
-  the records on screen, and the Capture screen says so.
+- **Location only exists where the tablet was told where it stands.** A tablet sets its shop once
+  ("This tablet is at", in its footer); records saved before that, or on a tablet nobody set up,
+  carry no `locationId`. The filter appears only when some record carries one, rather than offering
+  a single useless option. Location survives the live API, the JSON export and, since Sep 17, the
+  CSV's `location_id` column — a CSV exported before that day has no such column, and importing one
+  hides the filter.
+- **Camera accuracy figures are measured, not live.** 99.2% top-1 / 99.9% top-3 (colour fingerprint
+  fused with a MobileNetV2 embedding; 92.2 / 96.8 on the colour-only fallback) come from the tablet
+  app's cross-session holdout on a fixed gallery. They are transcribed from the tablet README, not
+  recomputed from the records on screen, and the Capture screen says so.
 - **A thin window is noise.** Under 20 boxes the aggregates are still computed and still shown, with
   a banner saying a single unusual box moves a share figure by whole points. Hiding the screen
   behind a threshold would be worse.
 - **No backend of our own.** Live mode reads the tablet's API; it never writes. There is no
-  database, no login, no persistence — reload and you are back to the cold screen.
+  database, no login, no persistence — reload and you are back to the cold screen. The durable
+  copy lives on the tablet side (Upstash Redis behind `/api/boxes`); the state chip names that
+  store, and says so in words if the server ever falls back to memory.
 - **Trend buckets are six equal slices of the selected window,** not calendar weeks. A 90-day window
   gives 15-day buckets. The sparklines are shapes, not calendars.
 - **Bar darkness is bound to a flavor's baseline standing across all loaded records**, not its rank

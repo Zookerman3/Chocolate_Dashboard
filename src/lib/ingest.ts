@@ -67,6 +67,8 @@ export function toRecord(input: unknown): { ok: true; record: BoxRecord } | { ok
       method,
       demo: raw.demo === true || raw.demo === 'true',
       ...(typeof raw.locationId === 'string' && raw.locationId ? { locationId: raw.locationId } : {}),
+      // The API stamps this on arrival; a device export never has it.
+      ...(isIsoish(raw.receivedAt) ? { receivedAt: raw.receivedAt } : {}),
     },
   }
 }

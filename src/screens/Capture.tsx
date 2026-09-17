@@ -28,8 +28,29 @@ interface SizeRow {
   tapMs: number
 }
 
-/** Read off the tablet app's README. Measured once, on a fixed photo gallery —
- * not a live figure, and labelled as such everywhere it appears. */
+/** Read off the tablet app's README ("Camera assist is on-device, measured, and
+ * honest about its edges", under Known limits). Measured once, on a fixed photo
+ * gallery — not a live figure, and labelled as such everywhere it appears.
+ * When the tablet re-measures, change CAMERA_FIGURES and nothing else: the bars
+ * and the paragraph under them both read from it. */
+const CAMERA_FIGURES = {
+  crops: 1920,
+  photos: 64,
+  sessions: 4,
+  /** Colour/texture fingerprint fused with a MobileNetV2 embedding — what ships. */
+  fusedTop1: 99.2,
+  fusedTop3: 99.9,
+  /** Colour alone — what the tablet falls back to if the network fails to load. */
+  colourTop1: 92.2,
+  colourTop3: 96.8,
+  /** The whole flow in a real browser on held-out photos of a 30-slot box. */
+  browserPhotos: 3,
+  browserPieces: 81,
+  browserWrongAutoFills: 0,
+  browserSeconds: 2.5,
+  gridFrames: 18,
+} as const
+
 interface AccuracyRow {
   label: string
   value: string
@@ -37,14 +58,16 @@ interface AccuracyRow {
   tone: 'good' | 'caution'
 }
 
+const pct = (n: number) => `${n}%`
+
 const ACCURACY: AccuracyRow[] = [
-  { label: 'Top-1, cross-session holdout', value: '92%', fraction: 0.92, tone: 'good' },
-  { label: 'Top-3, cross-session holdout', value: '97%', fraction: 0.97, tone: 'good' },
-  { label: 'Top-1, session the gallery never saw', value: '93.6%', fraction: 0.936, tone: 'good' },
-  { label: 'Top-3, session the gallery never saw', value: '97.7%', fraction: 0.977, tone: 'good' },
-  { label: 'Cells auto-filled without a tap', value: '87%', fraction: 0.87, tone: 'good' },
-  { label: 'Of those auto-fills, wrong', value: '1.9%', fraction: 0.019, tone: 'caution' },
-  { label: 'Empty slots recognised (54 of 54)', value: '100%', fraction: 1, tone: 'good' },
+  { label: 'Top-1, cross-session holdout (colour + network)', value: pct(CAMERA_FIGURES.fusedTop1), fraction: CAMERA_FIGURES.fusedTop1 / 100, tone: 'good' },
+  { label: 'Top-3, cross-session holdout (colour + network)', value: pct(CAMERA_FIGURES.fusedTop3), fraction: CAMERA_FIGURES.fusedTop3 / 100, tone: 'good' },
+  { label: 'Top-1, colour-only fallback (network failed to load)', value: pct(CAMERA_FIGURES.colourTop1), fraction: CAMERA_FIGURES.colourTop1 / 100, tone: 'caution' },
+  { label: 'Top-3, colour-only fallback', value: pct(CAMERA_FIGURES.colourTop3), fraction: CAMERA_FIGURES.colourTop3 / 100, tone: 'caution' },
+  { label: `Pieces right, real browser, ${CAMERA_FIGURES.browserPhotos} held-out photos (${CAMERA_FIGURES.browserPieces} of ${CAMERA_FIGURES.browserPieces})`, value: '100%', fraction: 1, tone: 'good' },
+  { label: `Wrong auto-fills on those photos (${CAMERA_FIGURES.browserWrongAutoFills} of ${CAMERA_FIGURES.browserPieces})`, value: pct(CAMERA_FIGURES.browserWrongAutoFills), fraction: CAMERA_FIGURES.browserWrongAutoFills / CAMERA_FIGURES.browserPieces, tone: 'good' },
+  { label: `Grid found, every placement tested (${CAMERA_FIGURES.gridFrames} of ${CAMERA_FIGURES.gridFrames} frames)`, value: '100%', fraction: 1, tone: 'good' },
 ]
 
 interface WeakPair {
@@ -53,16 +76,15 @@ interface WeakPair {
   why: string
 }
 
+/** The tablet README names one group as still the weakest: the copper-splatter
+ * browns under a strong colour cast or heavy noise. */
+const BROWNS: FlavorId[] = ['manhattan', 'espresso-martini', 'amaretto', 'champagne', 'turtle']
+
 const WEAK_PAIRS: WeakPair[] = [
   {
-    pics: ['maple-cream', 'turtle'],
-    names: `${flavorName('maple-cream')} vs ${flavorName('turtle')}`,
-    why: 'Two tan domes at the same height. Most of the misses live in this one pair.',
-  },
-  {
-    pics: ['grey-salt-caramel', 'creme-brulee', 'brownie-batter'],
-    names: `${flavorName('grey-salt-caramel')} vs ${flavorName('creme-brulee')} / ${flavorName('brownie-batter')}`,
-    why: 'Dark squares photographed against black insert plastic — the outline the model reads is the weakest signal on the tray.',
+    pics: BROWNS,
+    names: `The copper-splatter browns: ${BROWNS.map(flavorName).join(', ')}`,
+    why: 'Look alike under a strong colour cast or heavy noise — the cases the tablet’s "please confirm" step exists for. A blurred frame is refused ("hold still") rather than guessed at.',
   },
 ]
 
@@ -139,9 +161,9 @@ export function Capture({ agg, rangeWord }: ScreenProps) {
             )}
 
             <p style={{ margin: '16px 0 0', fontSize: 11.5, color: 'var(--cn-ink-3)', lineHeight: 1.5 }}>
-              Only the 4×4 (16) and 5×6 (30) inserts are measured, so those are the only sizes the
-              camera path is offered on. 6 and 10 are assumed 2×3 / 2×5 and unverified; 50 stays
-              tap-only.
+              The camera path is offered on the 6 (2×3), 10 (2×5), 16 (4×4) and 30 (5×6) inserts.
+              Only the 16 and 30 grids were measured on real boxes; the 6 and 10 layouts are assumed
+              until someone checks them against a real insert. 50 stays tap-only.
             </p>
           </div>
           <Footnote>
@@ -256,12 +278,15 @@ export function Capture({ agg, rangeWord }: ScreenProps) {
               </div>
             ))}
             <p style={{ margin: 0, fontSize: 11, color: 'var(--cn-ink-3)', lineHeight: 1.55 }}>
-              92% top-1 and 97% top-3 come from 64 photos of a mixed 30-slot box across four
-              sessions, each session held out in turn and scored against the other three. On a
-              session the gallery never saw, read through the same whole-frame path the tablet uses:
-              93.6% top-1, 97.7% top-3, 87% of cells auto-filled with 1.9% of those wrong, and all
-              54 empty slots recognised with no false pieces. That works out to about two confirm
-              taps and one wrong auto-fill every three 16-piece boxes.
+              {pct(CAMERA_FIGURES.fusedTop1)} top-1 and {pct(CAMERA_FIGURES.fusedTop3)} top-3 come
+              from {CAMERA_FIGURES.crops.toLocaleString()} labelled crops out of {CAMERA_FIGURES.photos} photos
+              of a mixed 30-slot box across {CAMERA_FIGURES.sessions} sessions, each session held out in
+              turn and scored against the other three: a colour/texture fingerprint fused with a
+              MobileNetV2 embedding, matched on the tablet itself. If that network fails to load the
+              tablet falls back to colour alone, at {pct(CAMERA_FIGURES.colourTop1)} / {pct(CAMERA_FIGURES.colourTop3)}.
+              Through the whole flow in a real browser on {CAMERA_FIGURES.browserPhotos} held-out photos:
+              all {CAMERA_FIGURES.browserPieces} pieces right, no wrong auto-fills, no confirm taps, about{' '}
+              {CAMERA_FIGURES.browserSeconds} s from photo to result.
             </p>
           </div>
         </Panel>

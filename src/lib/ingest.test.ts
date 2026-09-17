@@ -90,6 +90,13 @@ describe('parseJSON', () => {
     expect(records[0].locationId).toBe('bradley')
     expect(records[0].method).toBe('tap')
   })
+
+  it('keeps the receivedAt the API stamped, and adds none when there was none', () => {
+    const fromApi = { ...record, receivedAt: '2026-09-17T17:40:44.367Z' }
+    const { records } = parseJSON(JSON.stringify([fromApi, record]))
+    expect(records[0].receivedAt).toBe('2026-09-17T17:40:44.367Z')
+    expect(records[1]).not.toHaveProperty('receivedAt')
+  })
 })
 
 describe('parseExport', () => {
