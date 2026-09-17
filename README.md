@@ -6,9 +6,12 @@ The tablet app ([AI_Chocolation](https://github.com/Zookerman3/AI_Chocolation)) 
 into every box. This reads those records and turns them into a **make list**: how many of each
 flavor to produce, and which pairings keep coming back.
 
+> **Live link:** https://case-notes-delta.vercel.app · reads the tablet's API at
+> https://ai-chocolation.vercel.app (`/api/boxes`, `/api/health`).
+>
 > **What to click first:** "Load sample data" on the opening screen. It populates every screen
 > with three months of generated boxes across four locations — no API, no login, no chocolates
-> required.
+> required. "Connect to the live API" shows what real tablets have synced.
 
 Answers the Build-track prompt's stretch line: *"a view across many boxes: the most-picked pieces
 and the combinations customers keep coming back to."*
@@ -31,7 +34,7 @@ Three ways in, all producing the identical `BoxRecord[]` and running the identic
 |---|---|
 | **Sample** | One click on the cold screen. Deterministic, seeded, marked `demo: true`. |
 | **File** | Drag in the tablet's `boxes.json` or `boxes.csv`, or pick a file. |
-| **Live API** | `GET /api/boxes?from=&to=&location=`. Set `VITE_API_BASE`, or use the dev proxy. |
+| **Live API** | `GET /api/health` then `GET /api/boxes?from=&to=&location=`. Set `VITE_API_BASE` (build-time, no trailing slash, no `/api`), or use the dev proxy (`VITE_API_TARGET`). |
 
 Aggregation is client-side on purpose. At a shop's volume there is no reason for server-side
 rollups, and it keeps the file path byte-identical to the live path — the same function, the same
