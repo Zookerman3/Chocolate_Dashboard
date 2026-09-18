@@ -77,7 +77,6 @@ export function Overview({ agg, seqStep, rangeWord, openFlavor }: ScreenProps) {
         </div>
         <div style={{ height: 74, width: 1, background: 'var(--cn-line)' }} />
         <div style={{ flex: 1, minWidth: 240, maxWidth: 420 }}>
-          <Eyebrow style={{ fontSize: 10, marginBottom: 9 }}>The sentence to repeat</Eyebrow>
           <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.5 }}>
             {topTen.length >= 3 ? (
               <>
@@ -129,7 +128,6 @@ export function Overview({ agg, seqStep, rangeWord, openFlavor }: ScreenProps) {
       <Panel>
         <PanelHeader
           title="The make list"
-          note="Top ten by pieces as bars, every flavor as a table. Bar darkness is fixed to each flavor's baseline standing, not to its rank in this window — changing the date range never repaints the chart."
           actions={
             <button type="button" className="cn-btn" style={{ fontSize: 11 }} onClick={exportTable}>
               Export table

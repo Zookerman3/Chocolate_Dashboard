@@ -7,7 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App.tsx'
 
-const SCREENS = ['Overview', 'Flavors', 'Combinations', 'Boxes', 'Capture health', 'Tokens']
+const SCREENS = ['Overview', 'Flavors', 'Combinations', 'Boxes', 'Capture health']
 
 async function loadSample() {
   const user = userEvent.setup()
@@ -54,7 +54,7 @@ describe('App', () => {
   it('leads with a hero piece count and a make list', async () => {
     await loadSample()
     expect(screen.getByText(/the make list/i)).toBeInTheDocument()
-    expect(screen.getByText(/the sentence to repeat/i)).toBeInTheDocument()
+    expect(screen.getByText(/pieces a week, weighted to/i)).toBeInTheDocument()
   })
 
   it('keeps the range filter working and recomputes the window', async () => {

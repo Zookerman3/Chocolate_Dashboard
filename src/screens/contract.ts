@@ -6,9 +6,9 @@ import type { BoxRecord, FlavorId } from '../domain/types.ts'
 import type { Aggregate } from '../lib/aggregate.ts'
 import type { SeqStep } from '../lib/seq.ts'
 
-export type ScreenId = 'overview' | 'flavors' | 'combos' | 'boxes' | 'capture' | 'tokens'
+export type ScreenId = 'overview' | 'flavors' | 'combos' | 'boxes' | 'capture'
 
-export const SCREEN_ORDER: ScreenId[] = ['overview', 'flavors', 'combos', 'boxes', 'capture', 'tokens']
+export const SCREEN_ORDER: ScreenId[] = ['overview', 'flavors', 'combos', 'boxes', 'capture']
 
 export interface ScreenMeta {
   eyebrow: string
@@ -53,12 +53,6 @@ export const SCREEN_META: Record<ScreenId, ScreenMeta> = {
     subtitle:
       'Where the numbers above come from, how fast each method is, and precisely where it breaks.',
     icon: 'M4 8.5A2.5 2.5 0 0 1 6.5 6h1L9 4h6l1.5 2h1A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Zm8 2.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z',
-  },
-  tokens: {
-    eyebrow: 'Handoff',
-    title: 'Tokens',
-    subtitle: 'Named values for the implementer. Transcribe, do not interpret.',
-    icon: 'M7 7h.01M4 10.5V6a2 2 0 0 1 2-2h4.5a2 2 0 0 1 1.4.6l7.5 7.5a2 2 0 0 1 0 2.8l-4.5 4.5a2 2 0 0 1-2.8 0L4.6 11.9A2 2 0 0 1 4 10.5Z',
   },
 }
 

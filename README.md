@@ -51,7 +51,6 @@ looking at sample data or a real shop.
 3. **Combinations that repeat.** Recurring flavor sets, a pair co-occurrence heatmap, a pairs table.
 4. **Boxes.** One row per box, exactly as the tablet saved it. Exports round-trip.
 5. **Capture health.** Camera vs tap, seconds by method and size, measured accuracy, weak pairs.
-6. **Tokens.** Named values for the implementer.
 
 ## Known limits
 

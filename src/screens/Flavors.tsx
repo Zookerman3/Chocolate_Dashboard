@@ -72,33 +72,54 @@ export function Flavors({
 
   return (
     <div className="cn-fade" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-      {/* The picker. Every catalog flavor, strongest seller first. */}
-      <div className="cn-panel" style={{
-        display: 'flex', gap: 6, flexWrap: 'wrap', padding: 12, borderRadius: 'var(--cn-radius)',
-      }}>
-        {agg.ranked.map((f) => {
-          const on = f.flavorId === activeId
-          return (
-            <button
-              key={f.flavorId}
-              type="button"
-              aria-pressed={on}
-              onClick={() => selectFlavor(f.flavorId)}
-              title={`${f.name}: ${integer(f.pieces)} pieces`}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '5px 11px', borderRadius: 999, cursor: 'pointer',
-                fontSize: 11.5, fontWeight: on ? 800 : 600,
-                border: `1px solid ${on ? 'var(--cn-accent-fill)' : 'var(--cn-line)'}`,
-                background: on ? 'var(--cn-accent-soft)' : 'var(--cn-surface)',
-                color: on ? 'var(--cn-accent)' : 'var(--cn-ink-2)',
-              }}
-            >
-              {on ? <span aria-hidden="true">●</span> : null}
-              {f.name}
-            </button>
-          )
-        })}
+      {/* The picker. Every catalog flavor, strongest seller first, as an even
+          grid of equal-width tiles: thumbnail, name, pieces in the window. */}
+      <div className="cn-panel" style={{ padding: '14px 16px 16px', borderRadius: 'var(--cn-radius)' }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+          gap: 12, marginBottom: 10,
+        }}>
+          <Eyebrow style={{ margin: 0 }}>Pick a flavor</Eyebrow>
+          <span className="cn-num" style={{ fontSize: 11, color: 'var(--cn-ink-3)' }}>
+            {agg.ranked.length} flavors · strongest seller first · pieces in the {rangeWord}
+          </span>
+        </div>
+        <div role="group" aria-label="Flavors" style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(172px, 1fr))', gap: 6,
+        }}>
+          {agg.ranked.map((f) => {
+            const on = f.flavorId === activeId
+            return (
+              <button
+                key={f.flavorId}
+                type="button"
+                aria-pressed={on}
+                onClick={() => selectFlavor(f.flavorId)}
+                title={`${f.name}: ${integer(f.pieces)} pieces`}
+                style={{
+                  display: 'grid', gridTemplateColumns: '26px minmax(0,1fr) auto',
+                  alignItems: 'center', gap: 8, minHeight: 38,
+                  padding: '5px 10px 5px 6px', borderRadius: 12, cursor: 'pointer', textAlign: 'left',
+                  font: 'inherit', fontSize: 12, fontWeight: on ? 800 : 600,
+                  border: `1px solid ${on ? 'var(--cn-accent-fill)' : 'var(--cn-line-soft)'}`,
+                  boxShadow: on ? 'inset 0 0 0 1px var(--cn-accent-fill)' : 'none',
+                  background: on ? 'var(--cn-accent-soft)' : 'var(--cn-surface)',
+                  color: on ? 'var(--cn-accent)' : 'var(--cn-ink-2)',
+                }}
+              >
+                <Thumb flavorId={f.flavorId} size={26} />
+                <span style={{
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  fontSize: 12, fontWeight: on ? 800 : 600,
+                }}>{f.name}</span>
+                <span className="cn-num" style={{
+                  fontSize: 10.5, fontWeight: 700,
+                  color: on ? 'var(--cn-accent)' : 'var(--cn-ink-3)',
+                }}>{integer(f.pieces)}</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <div style={{
@@ -140,18 +161,6 @@ export function Flavors({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* The contrast the screen is built around. */}
           <Panel style={{ padding: '22px 24px' }}>
-            <Eyebrow style={{ marginBottom: 4 }}>The production question</Eyebrow>
-            <h3 style={{ fontSize: 19, lineHeight: 1.15, margin: '0 0 6px' }}>
-              Broad and shallow, or narrow and deep?
-            </h3>
-            <p style={{
-              margin: '0 0 20px', fontSize: 12, color: 'var(--cn-ink-3)',
-              maxWidth: '62ch', textWrap: 'pretty',
-            }}>
-              A flavor in 80% of boxes at one piece each is a completely different production
-              problem from one in 10% of boxes at eight pieces each. The first is a staple you can
-              never run out of; the second is a batch you make on demand.
-            </p>
             <div style={{
               display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16,
             }}>
