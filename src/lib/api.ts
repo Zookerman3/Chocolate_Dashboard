@@ -13,7 +13,53 @@
 import type { BoxRecord } from '../domain/types.ts'
 import { toRecord } from './ingest.ts'
 
-export const API_BASE: string = import.meta.env.VITE_API_BASE ?? ''
+/**
+ * The configured base, cleaned up before anything is built on it.
+ *
+ * This value is typed or pasted by a person into a deployment's settings, so it
+ * arrives with whatever came along for the ride: a byte-order mark, a zero-width
+ * space, a stray newline, quotes, a trailing slash. The byte-order mark is the
+ * cruel one. It is invisible, and it stops the string starting with "http", so
+ * `fetch` reads the whole thing as a path relative to this page and politely
+ * asks the dashboard's own origin for
+ * `/%EF%BB%BFhttps://the-tablet-app/api/health`. The result is a 404 whose
+ * cause cannot be seen by looking at the setting. That happened on Sep 17.
+ *
+ * Anything left that is not an absolute http(s) URL or a same-origin path is
+ * treated as unset, so a broken value hides the live option instead of offering
+ * a button that cannot work.
+ */
+export function normalizeApiBase(raw: string | undefined): string {
+  const cleaned = (raw ?? '')
+    // U+FEFF byte-order mark, U+200B-U+200D zero-width, U+2060 word joiner
+    .replace(/[\uFEFF\u200B-\u200D\u2060]/g, '')
+    .trim()
+    .replace(/^["']|["']$/g, '')
+    .trim()
+    .replace(/\/+$/, '')
+  if (!cleaned) return ''
+  if (cleaned.startsWith('/')) return cleaned // a same-origin prefix is fine
+  let url: URL
+  try {
+    url = new URL(cleaned)
+  } catch {
+    warnUnusable(cleaned, 'is not a URL')
+    return ''
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    warnUnusable(cleaned, `is ${url.protocol}, not http(s)`)
+    return ''
+  }
+  return `${url.origin}${url.pathname}`.replace(/\/+$/, '')
+}
+
+function warnUnusable(value: string, why: string): void {
+  console.warn(
+    `VITE_API_BASE ${why}: ${JSON.stringify(value)}. The dashboard will run on sample data and imports instead.`,
+  )
+}
+
+export const API_BASE: string = normalizeApiBase(import.meta.env.VITE_API_BASE)
 
 /** False when no API is configured — the UI then hides "live" as an option
  * instead of offering a button that cannot work. */

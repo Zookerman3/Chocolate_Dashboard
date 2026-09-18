@@ -34,7 +34,7 @@ Three ways in, all producing the identical `BoxRecord[]` and running the identic
 |---|---|
 | **Sample** | One click on the cold screen. Deterministic, seeded, marked `demo: true`. |
 | **File** | Drag in the tablet's `boxes.json` or `boxes.csv`, or pick a file. |
-| **Live API** | `GET /api/health` then `GET /api/boxes?from=&to=&location=`. Set `VITE_API_BASE` (build-time, no trailing slash, no `/api`), or use the dev proxy (`VITE_API_TARGET`). |
+| **Live API** | `GET /api/health` then `GET /api/boxes?from=&to=&location=`. Set `VITE_API_BASE` (build-time, the origin only: no trailing slash, no `/api`), or use the dev proxy (`VITE_API_TARGET`). The value is cleaned before use — a byte-order mark, zero-width character, stray quote or trailing slash is stripped, and anything that is not an http(s) URL is treated as unset rather than used to build a broken request. |
 
 Aggregation is client-side on purpose. At a shop's volume there is no reason for server-side
 rollups, and it keeps the file path byte-identical to the live path — the same function, the same

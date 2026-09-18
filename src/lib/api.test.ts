@@ -4,7 +4,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { BoxRecord } from '../domain/types.ts'
-import { ApiError, checkHealth, durabilityNote, fetchBoxes } from './api.ts'
+import { ApiError, checkHealth, durabilityNote, fetchBoxes, normalizeApiBase } from './api.ts'
 
 const BOX: BoxRecord = {
   id: 'bx-1',
@@ -200,5 +200,41 @@ describe('durabilityNote', () => {
     expect(durabilityNote(false, 'memory', 'Lost on a cold start.')).toBe('Lost on a cold start.')
     expect(durabilityNote(false, 'memory', null)).toMatch(/lost on a restart/i)
     expect(durabilityNote(false, null, null)).toMatch(/lost on a restart/i)
+  })
+})
+
+describe('normalizeApiBase', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('strips a byte-order mark pasted in front of the URL', () => {
+    // The Sep 17 outage: invisible U+FEFF, so the value did not start with
+    // "http", so every request went to the dashboard's own origin and 404'd.
+    expect(normalizeApiBase('﻿https://ai-chocolation.vercel.app')).toBe('https://ai-chocolation.vercel.app')
+  })
+
+  it('strips zero-width characters, surrounding whitespace, quotes and trailing slashes', () => {
+    expect(normalizeApiBase('  https://example.com/  \n')).toBe('https://example.com')
+    expect(normalizeApiBase('"https://example.com"')).toBe('https://example.com')
+    expect(normalizeApiBase('https://example.com​/')).toBe('https://example.com')
+    expect(normalizeApiBase('https://example.com///')).toBe('https://example.com')
+  })
+
+  it('keeps a path and drops a query or fragment', () => {
+    expect(normalizeApiBase('https://example.com/edge?x=1#y')).toBe('https://example.com/edge')
+  })
+
+  it('allows a same-origin prefix', () => {
+    expect(normalizeApiBase('/upstream')).toBe('/upstream')
+  })
+
+  it('treats an unset or unusable value as no live source, and says so once', () => {
+    expect(normalizeApiBase(undefined)).toBe('')
+    expect(normalizeApiBase('   ')).toBe('')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(normalizeApiBase('ai-chocolation.vercel.app')).toBe('') // no scheme
+    expect(normalizeApiBase('javascript:alert(1)')).toBe('')
+    expect(warn).toHaveBeenCalledTimes(2)
   })
 })
