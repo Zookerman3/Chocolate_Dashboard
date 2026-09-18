@@ -156,8 +156,7 @@ function navLabel(id: ScreenId): string {
     : id === 'flavors' ? 'Flavors'
     : id === 'combos' ? 'Combinations'
     : id === 'boxes' ? 'Boxes'
-    : id === 'capture' ? 'Capture health'
-    : 'Tokens'
+    : 'Capture health'
 }
 
 function relative(from: Date | null): string {

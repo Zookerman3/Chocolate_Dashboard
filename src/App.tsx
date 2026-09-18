@@ -19,7 +19,6 @@ import { Combos } from './screens/Combos.tsx'
 import type { ScreenId, ScreenProps } from './screens/contract.ts'
 import { Flavors } from './screens/Flavors.tsx'
 import { Overview } from './screens/Overview.tsx'
-import { Tokens } from './screens/Tokens.tsx'
 import { useDataSource } from './state/useDataSource.ts'
 
 type Theme = 'light' | 'dark'
@@ -139,8 +138,7 @@ export function App() {
                       : screen === 'flavors' ? <Flavors {...screenProps} />
                       : screen === 'combos' ? <Combos {...screenProps} />
                       : screen === 'boxes' ? <Boxes {...screenProps} />
-                      : screen === 'capture' ? <Capture {...screenProps} />
-                      : <Tokens {...screenProps} />}
+                      : <Capture {...screenProps} />}
                   </div>
                 </ErrorBoundary>
               )}

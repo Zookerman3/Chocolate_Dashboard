@@ -1,6 +1,6 @@
 /* Case Notes — token sheet and base layer.
  *
- * Every value here is named in the design handoff's Tokens screen. Roles resolve
+ * Every value here is named in the design handoff. Roles resolve
  * against the Organic system's tonal ramps; the dark theme is SELECTED from the
  * same ramps, never an automatic inversion of the light one.
  *
