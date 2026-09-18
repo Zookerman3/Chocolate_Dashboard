@@ -1,33 +1,29 @@
-// The live path end to end, through the real hook and the real shell: a third
-// way in from the cold start, a chip that admits when the server is not keeping
-// anything, and a failure that leaves the other two ways in working.
+// The live path end to end, through the real hook and the real shell: the app
+// connects on its own, the chip admits when the server is not keeping
+// anything, and a failure leaves a Retry that actually reconnects.
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from '../App.tsx'
 import { buildSampleRecords } from '../data/sampleRecords.ts'
+import { failLive, serveLive } from '../test/liveApi.ts'
 
 const RECORDS = buildSampleRecords({ now: new Date('2026-09-16T18:00:00Z'), days: 12 })
-
-function serveLive(health: unknown, boxes: unknown) {
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
-    const url = String(input)
-    const body = url.includes('/api/health') ? health : boxes
-    return new Response(JSON.stringify(body), {
-      status: 200, headers: { 'content-type': 'application/json' },
-    })
-  }))
-}
 
 beforeEach(() => { vi.spyOn(console, 'error').mockImplementation(() => {}) })
 afterEach(() => { vi.unstubAllGlobals() })
 
 describe('connecting to the live API', () => {
-  it('offers the live API as a real third choice on the cold start', () => {
+  it('connects on its own: no source choice is offered', async () => {
+    serveLive(
+      { ok: true, store: 'redis', durable: true, count: RECORDS.length },
+      { records: RECORDS, store: 'redis', durable: true },
+    )
     render(<App />)
-    expect(screen.getByRole('button', { name: /connect to the live api/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /load sample data/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /load sample|upload an export|connect to the live api/i })).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText(/^Live$/)).toBeInTheDocument())
+    expect(screen.queryByRole('button', { name: /load sample|upload an export|connect to the live api/i })).not.toBeInTheDocument()
   })
 
   it('says "Live · not durable" when the server admits it is not keeping records', async () => {
@@ -37,9 +33,7 @@ describe('connecting to the live API', () => {
       { records: RECORDS, count: RECORDS.length, store: 'memory', durable: false,
         generatedAt: '2026-09-16T18:00:00.000Z' },
     )
-    const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: /connect to the live api/i }))
 
     await waitFor(() => expect(screen.getByText(/live · not durable/i)).toBeInTheDocument())
     // The caveat is spelled out, not left to a colour.
@@ -51,9 +45,7 @@ describe('connecting to the live API', () => {
       { ok: true, store: 'redis', durable: true, count: RECORDS.length },
       { records: RECORDS, store: 'redis', durable: true },
     )
-    const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: /connect to the live api/i }))
 
     await waitFor(() => expect(screen.getByText(/^Live$/)).toBeInTheDocument())
     expect(screen.queryByText(/not durable/i)).not.toBeInTheDocument()
@@ -66,9 +58,7 @@ describe('connecting to the live API', () => {
       { ok: true, store: 'redis', durable: true, count: 0 },
       { records: [], count: 0, store: 'redis', durable: true },
     )
-    const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: /connect to the live api/i }))
 
     await waitFor(() => expect(screen.getByText(/^Live$/)).toBeInTheDocument())
     expect(screen.getByText(/no boxes in this window/i)).toBeInTheDocument()
@@ -90,7 +80,6 @@ describe('connecting to the live API', () => {
     }))
     const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: /connect to the live api/i }))
     await waitFor(() => expect(screen.getByText(/pieces sold/i)).toBeInTheDocument())
 
     const before = calls.length
@@ -102,16 +91,21 @@ describe('connecting to the live API', () => {
     expect(screen.getByText(/pieces sold/i)).toBeInTheDocument()
   })
 
-  it('shows the failure and leaves the other two ways in working', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Failed to fetch') }))
+  it('shows the failure, and Retry reconnects once the API is back', async () => {
+    failLive()
     const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: /connect to the live api/i }))
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent(/could not reach the box api/i)
-    // Nothing was blanked: the cold start is still standing, and still works.
-    await user.click(screen.getByRole('button', { name: /load sample data/i }))
+    expect(screen.getByText(/not connected/i)).toBeInTheDocument()
+
+    serveLive(
+      { ok: true, store: 'redis', durable: true, count: RECORDS.length },
+      { records: RECORDS, store: 'redis', durable: true },
+    )
+    await user.click(screen.getByRole('button', { name: /retry/i }))
     await waitFor(() => expect(screen.getByText(/pieces sold/i)).toBeInTheDocument())
+    expect(screen.getByText(/^Live$/)).toBeInTheDocument()
   })
 })

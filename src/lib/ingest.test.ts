@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { IngestError, parseCSV, parseCSVRows, parseExport, parseJSON } from './ingest.ts'
+import { IngestError, parseCSV, parseCSVRows, parseJSON } from './ingest.ts'
 
 const CSV_HEADER =
   'box_id,box_size,method,demo,started_at,completed_at,duration_ms,undo_count,flavor_id,flavor_name,piece_count'
@@ -96,13 +96,5 @@ describe('parseJSON', () => {
     const { records } = parseJSON(JSON.stringify([fromApi, record]))
     expect(records[0].receivedAt).toBe('2026-09-17T17:40:44.367Z')
     expect(records[1]).not.toHaveProperty('receivedAt')
-  })
-})
-
-describe('parseExport', () => {
-  it('picks the format from the filename, then from the content', () => {
-    expect(parseExport(CSV, 'boxes.csv').format).toBe('csv')
-    expect(parseExport('[]', 'boxes.json').format).toBe('json')
-    expect(parseExport(CSV).format).toBe('csv')
   })
 })

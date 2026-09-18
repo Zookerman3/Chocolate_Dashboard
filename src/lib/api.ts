@@ -1,7 +1,8 @@
-// The live path. Optional by design: if VITE_API_BASE is unset or the request
-// fails, the dashboard keeps working on sample data or a dropped-in export.
+// The tablet's box API — the only place the dashboard gets records from. It is
+// read on mount and on every Refresh; a failure keeps whatever is already on
+// screen, marked stale, rather than blanking the page.
 //
-// Two endpoints, both read-only and both tolerated when absent:
+// Two endpoints, both read-only:
 //   GET /api/boxes?from&to&location&limit -> { records, count, store, durable, generatedAt }
 //   GET /api/health                       -> { ok, store, durable, count, note, ... }
 //
@@ -13,11 +14,9 @@
 import type { BoxRecord } from '../domain/types.ts'
 import { toRecord } from './ingest.ts'
 
+/** Build-time. Empty means same-origin `/api/...`, which is what the dev proxy
+ * serves; a production build needs VITE_API_BASE set. */
 export const API_BASE: string = import.meta.env.VITE_API_BASE ?? ''
-
-/** False when no API is configured — the UI then hides "live" as an option
- * instead of offering a button that cannot work. */
-export const hasApi = Boolean(API_BASE) || import.meta.env.DEV
 
 export interface FetchBoxesOptions {
   from?: Date

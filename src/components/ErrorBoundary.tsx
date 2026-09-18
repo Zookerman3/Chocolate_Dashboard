@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </button>
           {this.props.onReset ? (
             <button type="button" className="cn-btn" onClick={() => { this.setState({ error: null }); this.props.onReset?.() }}>
-              Clear loaded data
+              Reload from the API
             </button>
           ) : null}
         </div>

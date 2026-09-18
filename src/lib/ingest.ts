@@ -1,8 +1,8 @@
-// Reading an export from the tablet app. This is a first-class input, not a
-// fallback: the dashboard has to render real data on a laptop that can reach no
-// API at all, which is exactly the situation a judge opens it in.
+// Turning raw input into BoxRecords. `toRecord` is what the API client runs
+// every live record through. The two parsers below read the formats the tablet
+// (and this dashboard's own Boxes screen) export; the contract and round-trip
+// tests use them to prove the exporters still write what the importer reads.
 //
-// Both formats the tablet writes are accepted:
 //   JSON — an array of BoxRecord, straight from "Export JSON"
 //   CSV  — the long format from "Export CSV": one row per flavor per box, which
 //          we fold back into one record per box_id.
@@ -178,11 +178,4 @@ export function parseCSV(text: string): IngestResult {
     else skipped.push(`box ${id}: ${result.why}`)
   }
   return { records, skipped, format: 'csv' }
-}
-
-export function parseExport(text: string, filename = ''): IngestResult {
-  const trimmed = text.trimStart()
-  if (filename.toLowerCase().endsWith('.csv')) return parseCSV(text)
-  if (trimmed.startsWith('[') || trimmed.startsWith('{')) return parseJSON(text)
-  return parseCSV(text)
 }
