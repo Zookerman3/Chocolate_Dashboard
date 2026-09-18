@@ -9,9 +9,9 @@ flavor to produce, and which pairings keep coming back.
 > **Live link:** https://case-notes-delta.vercel.app · reads the tablet's API at
 > https://ai-chocolation.vercel.app (`/api/boxes`, `/api/health`).
 >
-> **What to click first:** "Load sample data" on the opening screen. It populates every screen
-> with three months of generated boxes across four locations — no API, no login, no chocolates
-> required. "Connect to the live API" shows what real tablets have synced.
+> **Nothing to click first.** It connects to the tablet's API on open and shows what real
+> tablets have synced. Boxes saved with the tablet's demo mode on arrive marked `demo: true`
+> and are tagged "sample" on the Boxes screen.
 
 Answers the Build-track prompt's stretch line: *"a view across many boxes: the most-picked pieces
 and the combinations customers keep coming back to."*
@@ -26,22 +26,23 @@ npm run dev
 
 Node 20.19+ or 22.12+.
 
-## Data sources
+## Data source
 
-Three ways in, all producing the identical `BoxRecord[]` and running the identical aggregation:
+One: the tablet's API. On load the dashboard calls `GET /api/health` (where durability is stated
+plainly) and then `GET /api/boxes?from=&to=&location=`. Every record goes through the same
+validator the file importer used to use, and every screen aggregates the result in the browser.
 
-| Source | How |
-|---|---|
-| **Sample** | One click on the cold screen. Deterministic, seeded, marked `demo: true`. |
-| **File** | Drag in the tablet's `boxes.json` or `boxes.csv`, or pick a file. |
-| **Live API** | `GET /api/health` then `GET /api/boxes?from=&to=&location=`. Set `VITE_API_BASE` (build-time, no trailing slash, no `/api`), or use the dev proxy (`VITE_API_TARGET`). |
+- Production: set `VITE_API_BASE` at build time (no trailing slash, no `/api`). It is required —
+  with it unset the app tries same-origin `/api/...` and shows the failure on the opening screen.
+- Dev: leave it empty and let `npm run dev` proxy `/api` to `VITE_API_TARGET` (defaults to
+  `http://localhost:8787`; point it at `https://ai-chocolation.vercel.app` for real data).
 
 Aggregation is client-side on purpose. At a shop's volume there is no reason for server-side
-rollups, and it keeps the file path byte-identical to the live path — the same function, the same
-result, whether the records arrived over HTTP or off a USB stick.
+rollups, and the Boxes screen's CSV/JSON exports round-trip through the same record shape the API
+sends (`src/lib/interop.test.ts` holds the contract with the tablet's exporter).
 
-**The state chip in the sidebar is permanent.** A viewer can never be unsure whether they are
-looking at sample data or a real shop.
+**The state chip in the sidebar is permanent.** It says Connecting, Live, Live · not durable, or
+Live · API unreachable — a viewer can never be unsure whether the numbers are current.
 
 ## The screens
 
@@ -81,10 +82,12 @@ Keep this honest and current. The judges score it.
 - **A thin window is noise.** Under 20 boxes the aggregates are still computed and still shown, with
   a banner saying a single unusual box moves a share figure by whole points. Hiding the screen
   behind a threshold would be worse.
-- **No backend of our own.** Live mode reads the tablet's API; it never writes. There is no
-  database, no login, no persistence — reload and you are back to the cold screen. The durable
-  copy lives on the tablet side (Upstash Redis behind `/api/boxes`); the state chip names that
-  store, and says so in words if the server ever falls back to memory.
+- **No backend of our own.** The dashboard reads the tablet's API; it never writes. There is no
+  database, no login, no persistence — reload and it reads the API again. The durable copy lives
+  on the tablet side (Upstash Redis behind `/api/boxes`); the state chip names that store, and
+  says so in words if the server ever falls back to memory. If the API is down on open, the
+  opening screen says so and offers Retry; if it goes down later, the last data stays on screen
+  marked stale.
 - **Trend buckets are six equal slices of the selected window,** not calendar weeks. A 90-day window
   gives 15-day buckets. The sparklines are shapes, not calendars.
 - **Bar darkness is bound to a flavor's baseline standing across all loaded records**, not its rank
@@ -96,10 +99,10 @@ Keep this honest and current. The judges score it.
 ```
 src/
   domain/types.ts        the contract shared with the tablet app — keep identical
-  data/                  flavor catalog, deterministic sample records
-  lib/                   aggregate, format, ingest, api, seq (colour), download
-  state/useDataSource.ts cold | sample | file | live, plus stale and loading
-  components/            shell, primitives, cold start, error boundary
+  data/                  flavor catalog, location names, deterministic test records
+  lib/                   aggregate, format, ingest (record validation), api, seq (colour), download
+  state/useDataSource.ts connects on mount: cold | live, plus stale and loading
+  components/            shell, primitives, connecting screen, error boundary
   screens/               one file per screen, all pure — they receive an Aggregate
 ```
 

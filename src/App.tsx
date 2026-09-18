@@ -96,7 +96,7 @@ export function App() {
     ? `${agg.from.toLocaleDateString()} – ${agg.to.toLocaleDateString()}`
     : 'no records in range'
 
-  const cold = source.kind === 'cold' && source.records.length === 0
+  const cold = source.kind === 'cold'
 
   return (
     <div style={{ display: 'flex', alignItems: 'stretch', minHeight: '100vh' }}>
@@ -121,7 +121,7 @@ export function App() {
                 margin: '16px 32px 0', padding: '10px 16px', borderRadius: 16,
                 background: 'var(--cn-surface-2)', color: 'var(--cn-ink-2)', fontSize: 11.5,
               }}>
-                {source.skipped.length} row{source.skipped.length === 1 ? '' : 's'} in that export
+                {source.skipped.length} record{source.skipped.length === 1 ? '' : 's'} from the API
                 could not be read and {source.skipped.length === 1 ? 'was' : 'were'} left out:{' '}
                 {source.skipped.slice(0, 3).join('; ')}
                 {source.skipped.length > 3 ? ` (+${source.skipped.length - 3} more)` : ''}

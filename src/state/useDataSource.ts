@@ -1,15 +1,16 @@
-// Where the records on screen came from, and how fresh they are. Every screen
-// reads this; the state chip in the shell renders it verbatim, so the viewer can
-// never be unsure whether they are looking at sample data or the real shop.
+// Where the records on screen came from, and how fresh they are. There is one
+// source: the tablet's box API. The hook connects to it on mount; every screen
+// reads the result, and the state chip in the shell renders it verbatim, so the
+// viewer can always tell whether the numbers are live, stale, or not here yet.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { BoxRecord } from '../domain/types.ts'
 import type { ApiHealth } from '../lib/api.ts'
-import { ApiError, checkHealth, durabilityNote, fetchBoxes, hasApi } from '../lib/api.ts'
-import { IngestError, parseExport } from '../lib/ingest.ts'
-import { buildSampleRecords } from '../data/sampleRecords.ts'
+import { ApiError, checkHealth, durabilityNote, fetchBoxes } from '../lib/api.ts'
 
-export type SourceKind = 'cold' | 'sample' | 'file' | 'live'
+/** `cold` until the first fetch has answered; `live` from then on, even when a
+ * later refresh fails (that is what `stale` is for). */
+export type SourceKind = 'cold' | 'live'
 
 export interface DataSourceState {
   kind: SourceKind
@@ -19,94 +20,42 @@ export interface DataSourceState {
   stale: boolean
   /** Human-readable, already phrased for display. */
   error: string | null
-  /** Entries the import could not read. Shown, not swallowed. */
+  /** Entries the API sent that were not box records. Shown, not swallowed. */
   skipped: string[]
   syncedAt: Date | null
-  filename: string | null
-  /** Live only. False means the server is not keeping these records; null means
-   * it did not say, which is never treated as a promise that it is. */
+  /** False means the server is not keeping these records; null means it did
+   * not say, which is never treated as a promise that it is. */
   durable: boolean | null
-  /** Live only: "redis", "memory", whatever the server calls its store. */
+  /** "redis", "memory", whatever the server calls its store. */
   store: string | null
-  /** Live only: the server's plain-English caveat about its own storage. */
+  /** The server's plain-English caveat about its own storage. */
   storeNote: string | null
 }
 
 const EMPTY: DataSourceState = {
   kind: 'cold', records: [], loading: false, stale: false,
-  error: null, skipped: [], syncedAt: null, filename: null,
+  error: null, skipped: [], syncedAt: null,
   durable: null, store: null, storeNote: null,
 }
 
 export interface DataSource extends DataSourceState {
-  hasApi: boolean
-  loadSample(): void
-  loadFile(file: File): Promise<void>
-  loadText(text: string, filename?: string): void
-  connectLive(): Promise<void>
-  /** Re-reads the live API without changing which source the screen is on. */
+  /** Re-reads the API. Keeps what is on screen, marked stale, if that fails. */
   refresh(): Promise<void>
   retry(): void
+  /** Drops everything and connects again from cold. */
   reset(): void
 }
 
 export function useDataSource(): DataSource {
   const [state, setState] = useState<DataSourceState>(EMPTY)
   const abort = useRef<AbortController | null>(null)
-  // Read inside callbacks, never during render, so refresh() can tell whether
-  // the screen is already on live data without re-creating itself each time.
-  const kindRef = useRef<SourceKind>(EMPTY.kind)
 
-  useEffect(() => { kindRef.current = state.kind }, [state.kind])
   useEffect(() => () => abort.current?.abort(), [])
 
-  const loadSample = useCallback(() => {
-    setState({
-      ...EMPTY,
-      kind: 'sample',
-      records: buildSampleRecords(),
-      syncedAt: new Date(),
-    })
-  }, [])
-
-  const loadText = useCallback((text: string, filename?: string) => {
-    try {
-      const result = parseExport(text, filename)
-      if (result.records.length === 0) {
-        setState((prev) => ({ ...prev, error: 'That export had no readable box records in it.' }))
-        return
-      }
-      setState({
-        ...EMPTY,
-        kind: 'file',
-        records: result.records,
-        skipped: result.skipped,
-        syncedAt: new Date(),
-        filename: filename ?? null,
-      })
-    } catch (cause) {
-      setState((prev) => ({
-        ...prev,
-        error: cause instanceof IngestError ? cause.message : 'That file could not be read.',
-      }))
-    }
-  }, [])
-
-  const loadFile = useCallback(async (file: File) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }))
-    try {
-      const text = await file.text()
-      loadText(text, file.name)
-    } catch {
-      setState((prev) => ({ ...prev, loading: false, error: 'That file could not be opened.' }))
-    }
-  }, [loadText])
-
-  // One implementation behind connectLive() and refresh(). It asks the health
-  // endpoint first — that is where durability is stated plainly — and then
-  // fetches. A health endpoint that is missing or unhappy does not veto the
-  // fetch: if the records come back, they are shown, just without the health
-  // reading. Only a failed fetch is a failure.
+  // It asks the health endpoint first — that is where durability is stated
+  // plainly — and then fetches. A health endpoint that is missing or unhappy
+  // does not veto the fetch: if the records come back, they are shown, just
+  // without the health reading. Only a failed fetch is a failure.
   const loadLive = useCallback(async () => {
     abort.current?.abort()
     const controller = new AbortController()
@@ -149,20 +98,19 @@ export function useDataSource(): DataSource {
     }
   }, [])
 
-  const connectLive = useCallback(() => loadLive(), [loadLive])
+  // Connect on mount. StrictMode mounts twice in dev; the second call aborts
+  // the first, and the unmount effect above aborts whichever is last.
+  useEffect(() => { void loadLive() }, [loadLive])
 
-  const refresh = useCallback(async () => {
-    // Refreshing a file or a sample would silently swap the viewer's data out
-    // from under them. Live data is the only thing there is to refresh.
-    if (kindRef.current !== 'live') return
-    await loadLive()
+  const refresh = useCallback(() => loadLive(), [loadLive])
+  const retry = useCallback(() => { void loadLive() }, [loadLive])
+  const reset = useCallback(() => {
+    setState(EMPTY)
+    void loadLive()
   }, [loadLive])
 
-  const retry = useCallback(() => { void loadLive() }, [loadLive])
-  const reset = useCallback(() => setState(EMPTY), [])
-
   return useMemo(
-    () => ({ ...state, hasApi, loadSample, loadFile, loadText, connectLive, refresh, retry, reset }),
-    [state, loadSample, loadFile, loadText, connectLive, refresh, retry, reset],
+    () => ({ ...state, refresh, retry, reset }),
+    [state, refresh, retry, reset],
   )
 }

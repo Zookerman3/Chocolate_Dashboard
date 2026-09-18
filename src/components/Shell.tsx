@@ -1,6 +1,6 @@
 // The frame every screen sits in: navigation, the filters that apply everywhere,
 // and the data-source chip. The chip is permanent and unmissable by design — a
-// viewer must never be unsure whether they are looking at sample data or a shop.
+// viewer must never be unsure whether the numbers are live, stale, or not here yet.
 
 import type { ReactNode } from 'react'
 import type { ScreenId } from '../screens/contract.ts'
@@ -169,7 +169,7 @@ function relative(from: Date | null): string {
 }
 
 export function StateChip({ source }: { source: DataSource }) {
-  const { kind, stale, filename, syncedAt, durable, store, storeNote } = source
+  const { kind, stale, loading, error, syncedAt, durable, store, storeNote } = source
   // The server saying "durable: false" means it is holding these records in
   // memory and will lose them. That must show on the chip itself, in words —
   // never as a colour alone, and never hidden behind a tooltip.
@@ -184,15 +184,13 @@ export function StateChip({ source }: { source: DataSource }) {
   const title = stale ? 'Live · API unreachable'
     : notDurable ? 'Live · not durable'
     : kind === 'live' ? 'Live'
-    : kind === 'file' ? 'Imported file'
-    : kind === 'sample' ? 'Sample data'
-    : 'No data'
+    : loading ? 'Connecting'
+    : 'Not connected'
   const sub = stale ? `last data ${relative(syncedAt)}`
-    : kind === 'file' ? (filename ?? 'from disk')
     : notDurable ? 'not being kept — lost on restart'
     : kind === 'live' ? `${store ? `${store} · ` : ''}synced ${relative(syncedAt)}`
-    : kind === 'sample' ? 'generated, not a real shop'
-    : 'load something to begin'
+    : loading ? 'reading the live API…'
+    : (error ?? 'nothing loaded')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

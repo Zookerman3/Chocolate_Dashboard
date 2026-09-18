@@ -6,9 +6,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // The tablet app's API, when one is running. Every screen also works with no
-    // API at all (drag in a CSV/JSON export), so this is convenience, not a hard
-    // dependency — see README "Data sources".
+    // The tablet app's API. It is the only place records come from, so in dev
+    // this proxy has to point at a running one — local, or the deployed tablet
+    // via VITE_API_TARGET. See README "Data source".
     proxy: {
       '/api': {
         target: process.env.VITE_API_TARGET ?? 'http://localhost:8787',
