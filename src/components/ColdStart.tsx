@@ -34,7 +34,7 @@ export function ColdStart({ source }: { source: DataSource }) {
         {source.error ? (
           <div role="alert" style={{
             marginBottom: 18, padding: '11px 15px', borderRadius: 16,
-            border: '1px solid #d9a24a', background: 'var(--cn-accent-soft)',
+            border: '1px solid var(--cn-accent-fill)', background: 'var(--cn-accent-soft)',
             color: 'var(--cn-ink)', fontSize: 12.5,
           }}>{source.error}</div>
         ) : null}
@@ -43,7 +43,7 @@ export function ColdStart({ source }: { source: DataSource }) {
           <button type="button" onClick={source.loadSample} style={{
             display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
             padding: 22, border: '1px solid var(--cn-accent-fill)', borderRadius: 28,
-            background: 'var(--cn-accent-fill)', color: '#fff8f0', cursor: 'pointer',
+            background: 'var(--cn-accent-fill)', color: 'var(--cn-on-accent)', cursor: 'pointer',
             textAlign: 'left', boxShadow: 'var(--cn-shadow-md)',
           }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"

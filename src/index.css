@@ -1,92 +1,98 @@
 /* Case Notes — token sheet and base layer.
  *
- * Every value here is named in the design handoff. Roles resolve
- * against the Organic system's tonal ramps; the dark theme is SELECTED from the
- * same ramps, never an automatic inversion of the light one.
+ * Brand: Cocoa Dolce. Values were read off shop.cocoadolce.com's theme CSS on
+ * 2026-09-18 (--color-primary #9e8959, darker #776743, black text and footer,
+ * white / #f9f8f4 surfaces, #eeeeee borders, success #3a8735, 5px buttons).
+ * Their typeface is ITC Avant Garde Gothic, which is licensed; Jost (Google
+ * Fonts, OFL) is the geometric stand-in. The dark theme is the site's black
+ * footer, selected by hand — never an automatic inversion of the light one.
  *
- * Screens consume roles (var(--cn-ink-2)), never raw hex. */
+ * Screens consume roles (var(--cn-ink-2)), never raw hex. To restyle, change
+ * values here; every name below is load-bearing (seq.ts, tests). */
 
 :root {
-  --cn-bg: #f5ead8;
-  --cn-surface: #f9f4ed;
-  --cn-surface-2: #eee7db;
-  --cn-ink: #2e2b25;
-  --cn-ink-2: #645c50;
-  --cn-ink-3: #82796a;
-  --cn-line: #dcd3c4;
-  --cn-line-soft: #e7dfd1;
+  --cn-bg: #f7f6f2;
+  --cn-surface: #ffffff;
+  --cn-surface-2: #f3f1ea;
+  --cn-ink: #111111;
+  --cn-ink-2: #444444;
+  --cn-ink-3: #6b6b6b;
+  --cn-line: #dcdad3;
+  --cn-line-soft: #ebe9e3;
 
-  --cn-accent: #b2622d;        /* accent as TEXT — the paragraph-safe deep step */
-  --cn-accent-fill: #c67139;   /* accent as a FILL — primary button, brand mark */
-  --cn-accent-soft: #fff2eb;
-  --cn-sage: #56633f;
-  --cn-sage-fill: #728157;
-  --cn-sage-soft: #f0fae1;
-  --cn-status-stale: #82796a;
-  --cn-status-caution: #b2622d;
+  --cn-accent: #776743;        /* accent as TEXT — the paragraph-safe deep step */
+  --cn-accent-fill: #9e8959;   /* accent as a FILL — primary button, brand mark */
+  --cn-accent-soft: #f3efe4;
+  --cn-on-accent: #ffffff;     /* text on the accent fill — the site's buttons are white on gold */
+  --cn-sage: #2f6b2b;
+  --cn-sage-fill: #3a8735;
+  --cn-sage-soft: #e8f2e6;
+  --cn-status-stale: #6b6b6b;
+  --cn-status-caution: #776743;
 
   /* Sequential ramp: one hue, light to dark. Bound to a flavor's standing, so a
    * date-range change never repaints the bars. */
-  --cn-seq-1: #ffd9c2;
-  --cn-seq-2: #ffc6a5;
-  --cn-seq-3: #f6a06b;
-  --cn-seq-4: #e08a52;
-  --cn-seq-5: #d67f48;
-  --cn-seq-6: #b2622d;
-  --cn-seq-7: #8c491a;
+  --cn-seq-1: #f3efe4;
+  --cn-seq-2: #e6dfcb;
+  --cn-seq-3: #d3c8a8;
+  --cn-seq-4: #bfaf85;
+  --cn-seq-5: #9e8959;
+  --cn-seq-6: #776743;
+  --cn-seq-7: #4f4429;
 
   /* Categorical: exactly two slots, fixed order, never cycled. */
-  --cn-cat-1: #c67139;         /* camera-assisted */
-  --cn-cat-2: #728157;         /* tap */
-  --cn-heat-0: #eee7db;
+  --cn-cat-1: #9e8959;         /* camera-assisted */
+  --cn-cat-2: #3a3b3c;         /* tap */
+  --cn-heat-0: #f3f1ea;
 
-  --cn-shadow: 0 1px 2px rgba(46, 43, 37, 0.09);
-  --cn-shadow-md: 0 3px 10px rgba(46, 43, 37, 0.12);
+  --cn-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --cn-shadow-md: 0 3px 10px rgba(0, 0, 0, 0.08);
 
-  --cn-font-display: 'Caprasimo', Georgia, serif;
-  --cn-font-body: 'Figtree', system-ui, -apple-system, sans-serif;
+  --cn-font-display: 'Jost', 'Avant Garde', system-ui, sans-serif;
+  --cn-font-body: 'Jost', system-ui, -apple-system, sans-serif;
 
-  --cn-radius-sm: 10px;
-  --cn-radius: 20px;
-  --cn-radius-lg: 28px;
+  --cn-radius-sm: 6px;
+  --cn-radius: 10px;
+  --cn-radius-lg: 14px;
   --cn-radius-pill: 999px;
 
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --cn-bg: #1f1c17;
-  --cn-surface: #2a251f;
-  --cn-surface-2: #332d25;
-  --cn-ink: #f5ead8;
-  --cn-ink-2: #c0b6a5;
-  --cn-ink-3: #a19786;
-  --cn-line: #463e33;
-  --cn-line-soft: #3a3229;
+  --cn-bg: #0f0f0f;
+  --cn-surface: #1a1a1a;
+  --cn-surface-2: #242424;
+  --cn-ink: #f5f5f5;
+  --cn-ink-2: #cfcaca;
+  --cn-ink-3: #9a9a9a;
+  --cn-line: #333333;
+  --cn-line-soft: #2a2a2a;
 
-  --cn-accent: #f6a06b;
-  --cn-accent-fill: #d67f48;
-  --cn-accent-soft: #3a2617;
-  --cn-sage: #aebf92;
-  --cn-sage-fill: #8fa073;
-  --cn-sage-soft: #2b3320;
-  --cn-status-stale: #a19786;
-  --cn-status-caution: #f6a06b;
+  --cn-accent: #c9b27e;
+  --cn-accent-fill: #9e8959;
+  --cn-accent-soft: #2a2618;
+  --cn-on-accent: #ffffff;
+  --cn-sage: #a6cf9f;
+  --cn-sage-fill: #3a8735;
+  --cn-sage-soft: #1c2a1a;
+  --cn-status-stale: #9a9a9a;
+  --cn-status-caution: #c9b27e;
 
-  --cn-seq-1: #5a2f16;
-  --cn-seq-2: #75401f;
-  --cn-seq-3: #8c491a;
-  --cn-seq-4: #b2622d;
-  --cn-seq-5: #d67f48;
-  --cn-seq-6: #f6a06b;
-  --cn-seq-7: #ffc6a5;
+  --cn-seq-1: #4f4429;
+  --cn-seq-2: #776743;
+  --cn-seq-3: #9e8959;
+  --cn-seq-4: #b9a676;
+  --cn-seq-5: #cdbf97;
+  --cn-seq-6: #e0d6b8;
+  --cn-seq-7: #f0ead6;
 
-  --cn-cat-1: #d67f48;
-  --cn-cat-2: #8fa073;
-  --cn-heat-0: #332d25;
+  --cn-cat-1: #b9a676;
+  --cn-cat-2: #cfcaca;
+  --cn-heat-0: #242424;
 
-  --cn-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --cn-shadow-md: 0 3px 12px rgba(0, 0, 0, 0.45);
+  --cn-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --cn-shadow-md: 0 3px 12px rgba(0, 0, 0, 0.55);
 
   color-scheme: dark;
 }
@@ -105,7 +111,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-::selection { background: #ffc6a5; color: #402310; }
+::selection { background: var(--cn-accent-soft); color: var(--cn-ink); }
 
 a { color: var(--cn-accent); text-decoration: none; border-bottom: 1px solid currentColor; }
 a:hover { color: var(--cn-ink); }
@@ -115,7 +121,7 @@ button, select, input { font: inherit; color: inherit; }
 /* Themed focus, never the default blue ring. */
 :focus-visible { outline: 2px solid var(--cn-accent-fill); outline-offset: 2px; }
 
-h1, h2, h3 { font-family: var(--cn-font-display); font-weight: 400; letter-spacing: -0.015em; margin: 0; }
+h1, h2, h3 { font-family: var(--cn-font-display); font-weight: 500; letter-spacing: 0; margin: 0; }
 
 .cn-num { font-variant-numeric: tabular-nums; }
 
@@ -154,9 +160,10 @@ h1, h2, h3 { font-family: var(--cn-font-display); font-weight: 400; letter-spaci
 .cn-btn-primary {
   background: var(--cn-accent-fill);
   border-color: var(--cn-accent-fill);
-  color: #fff8f0;
+  color: var(--cn-on-accent);
 }
-.cn-btn-primary:hover { background: var(--cn-accent); border-color: var(--cn-accent); }
+/* The site's buttons go black on hover. */
+.cn-btn-primary:hover { background: var(--cn-ink); border-color: var(--cn-ink); }
 
 .cn-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .cn-table th {

@@ -53,17 +53,20 @@ export function Sidebar({
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
         <div style={{
-          width: 38, height: 38, flex: 'none', borderRadius: '14px 14px 14px 6px',
+          width: 38, height: 38, flex: 'none', borderRadius: 'var(--cn-radius-sm)',
           background: 'var(--cn-accent-fill)', display: 'grid', placeItems: 'center',
         }}>
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff8f0"
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--cn-on-accent)"
             strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M4 20h16" /><path d="M7.5 20v-7" /><path d="M12 20V6" /><path d="M16.5 20v-4.5" />
           </svg>
         </div>
         <div>
-          <div style={{ fontFamily: 'var(--cn-font-display)', fontSize: 17, lineHeight: 1 }}>Case Notes</div>
-          <Eyebrow style={{ marginTop: 5 }}>Box analytics</Eyebrow>
+          <div style={{
+            fontFamily: 'var(--cn-font-display)', fontSize: 15, lineHeight: 1, fontWeight: 600,
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+          }}>Case Notes</div>
+          <Eyebrow style={{ marginTop: 5, color: 'var(--cn-accent)' }}>Cocoa Dolce · Box analytics</Eyebrow>
         </div>
       </div>
 
@@ -252,7 +255,7 @@ export function ThinDataBanner({ boxes }: { boxes: number }) {
   return (
     <div style={{
       margin: '16px 32px 0', display: 'flex', alignItems: 'flex-start', gap: 10,
-      padding: '12px 16px', border: '1px solid #d9a24a', borderRadius: 16,
+      padding: '12px 16px', border: '1px solid var(--cn-accent-fill)', borderRadius: 16,
       background: 'var(--cn-accent-soft)', color: 'var(--cn-ink)',
     }}>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cn-accent)"
